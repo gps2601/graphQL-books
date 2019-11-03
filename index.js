@@ -104,7 +104,7 @@ const typeDefs = gql`
         hello: String!
         bookCount: Int!
         authorCount: Int!
-        allBooks(author: String): [Book]
+        allBooks(author: String, genre: String): [Book]
         allAuthors: [Author]
     }
 `
@@ -115,10 +115,16 @@ const resolvers = {
     bookCount: () => { return books.length},
     authorCount: () => { return authors.length},
     allBooks: (root, args) => {
-        if(!args.author){
+        if(!args.author && !args.genre){
             return books
         }
-        return books.filter(book => book.author === args.author)
+        if(args.author && !args.genre) {
+            return books.filter(book => book.author === args.author)
+        }
+        if(!args.author && args.genre) {
+            return books.filter(book => book.genres.includes(args.genre))
+        }
+        return books.filter(book => book.genres.includes(args.genre)).filter(book => book.author === args.author)
     },
     allAuthors: () => {
         authors = authors.map(author => ({...author, bookCount: books.filter(book => book.author === author.name).length}))
